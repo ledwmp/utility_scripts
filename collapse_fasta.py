@@ -1,5 +1,6 @@
 from bloom_filter import BloomFilter
 import sys
+import os
 
 kmer_len = 40
 
@@ -22,20 +23,22 @@ class bloom_object:
 		"""
 		for i in kmers_test[1]:
 			try:
-				assert i not in self.bloom
-			except AssertionError:
+				assert i not in self.bloom #check if not in bloom
+			except AssertionError: #when in bloom
 				self.name_list.append(kmers_test[0])
 				for j in kmers_test[1]:
-					self.bloom.add(j)
+					self.bloom.add(j) #add all kmers to bloom
 				return 1
 			return 0
 
 class collapsed_contigs:
 	"""
-	Object to hold list of bloom_objects
+	Object to hold and update list of bloom_objects
 	"""
-	def __init__(self):
+	def __init__(self,kmer_len: int,max_elements: int):
+		self.kmer_len = kmer_len
 		self.bloom_list = []
+		self.bloom_filter = BloomFilter(max_elements=max_elements,error_rate=1./self.kmer_len)
 	@staticmethod
 	def kmer_assembler(fasta: tuple,kmer: int):
 		"""
@@ -51,28 +54,47 @@ class collapsed_contigs:
 	def clump(self,fasta: tuple):
 		"""
 		Method to iterate through list of bloom filters and add to end if not
-		found in list
+		found in list. Also filters through main bloom filter to avoid iterating
+		through full list.
 		"""
-		kmers = self.kmer_assembler(fasta,kmer_len)
+		kmers = self.kmer_assembler(fasta,self.kmer_len)
 		if kmers is not None:
 			if len(self.bloom_list) < 1:
 				self.bloom_list.append(bloom_object(kmers))
+				for i in kmers[1]:
+					self.bloom_filter.add(i)
 			else:
-				is_new = 0
-				for i in self.bloom_list:
-					is_new += i.test_membership(kmers)
-				if is_new == 0:
+				seen = 0
+				for i in kmers[1]:
+					try:
+						assert i not in self.bloom_filter #when not in large bloom
+					except AssertionError:
+						seen = 1
+						is_new = 0
+						for j in self.bloom_list:
+							is_new += j.test_membership(kmers)
+						if is_new == 0:
+							self.bloom_list.append(bloom_object(kmers))
+						for j in kmers[1]:
+							self.bloom_filter.add(j)
+						break
+				if seen == 0: #hasn't been seen
 					self.bloom_list.append(bloom_object(kmers))
+					for i in kmers[1]:
+						self.bloom_filter.add(i)
+
+
 
 def main():
-	contigs = collapsed_contigs()
+	byte_size = os.path.getsize(sys.argv[1])
+	contigs = collapsed_contigs(kmer_len,int(byte_size/2))
 	with open(sys.argv[1]) as r:
 		j = 0
 		for line in r:
 			name = line.strip().strip(">")
 			dna = next(r).strip()
 			contigs.clump((name,dna))
-			print([i.name_list for i in contigs.bloom_list if len(i.name_list) > 3])
+			print([i.name_list[0] for i in contigs.bloom_list if len(i.name_list) > 1])
 			print(j)
 			j += 1
 if __name__ == "__main__":
