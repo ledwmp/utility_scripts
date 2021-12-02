@@ -2,7 +2,7 @@ from bloom_filter import BloomFilter
 import sys
 import os
 
-kmer_len = 40
+kmer_len = 31
 
 class bloom_object:
 	"""
@@ -24,7 +24,7 @@ class bloom_object:
 		for i in kmers_test[1]:
 			try:
 				assert i not in self.bloom #check if not in bloom
-			except AssertionError: #when in bloom
+			except AssertionError: #if in bloom
 				self.name_list.append(kmers_test[0])
 				for j in kmers_test[1]:
 					self.bloom.add(j) #add all kmers to bloom
@@ -55,7 +55,7 @@ class collapsed_contigs:
 		"""
 		Method to iterate through list of bloom filters and add to end if not
 		found in list. Also filters through main bloom filter to avoid iterating
-		through full list.
+		through full list if all kmers haven't been found.
 		"""
 		kmers = self.kmer_assembler(fasta,self.kmer_len)
 		if kmers is not None:
@@ -66,18 +66,25 @@ class collapsed_contigs:
 			else:
 				seen = 0
 				for i in kmers[1]:
+					print(kmers[0],i)
 					try:
 						assert i not in self.bloom_filter #when not in large bloom
 					except AssertionError:
 						seen = 1
 						is_new = 0
 						for j in self.bloom_list:
+							#this offloads all kmers into bloom_filter, forcing the
+							#next iteration to catch and reiterate again. Instead
+							#maybe store indices of catches and then offload into
+							#all indices after all kmers in fasta have been iterated
+							#through
 							is_new += j.test_membership(kmers)
 						if is_new == 0:
 							self.bloom_list.append(bloom_object(kmers))
+						#same here
 						for j in kmers[1]:
 							self.bloom_filter.add(j)
-						break
+						#break
 				if seen == 0: #hasn't been seen
 					self.bloom_list.append(bloom_object(kmers))
 					for i in kmers[1]:
@@ -94,7 +101,7 @@ def main():
 			name = line.strip().strip(">")
 			dna = next(r).strip()
 			contigs.clump((name,dna))
-			print([i.name_list[0] for i in contigs.bloom_list if len(i.name_list) > 1])
+			print([(i.name_list[0],len(i.name_list)) for i in contigs.bloom_list if len(i.name_list) > 1])
 			print(j)
 			j += 1
 if __name__ == "__main__":
