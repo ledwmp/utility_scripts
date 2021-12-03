@@ -2,7 +2,7 @@ from bloom_filter import BloomFilter
 import sys
 import os
 
-kmer_len = 31
+kmer_len = 25
 
 class bloom_object:
 	"""
@@ -24,12 +24,15 @@ class bloom_object:
 		for i in kmers_test[1]:
 			try:
 				assert i not in self.bloom #check if not in bloom
-			except AssertionError: #if in bloom
-				self.name_list.append(kmers_test[0])
-				for j in kmers_test[1]:
-					self.bloom.add(j) #add all kmers to bloom
+			except AssertionError: #if might be in bloom
+				#for j in kmers_test[1]:
+				#	self.bloom.add(j) #add all kmers to bloom
 				return 1
 			return 0
+	def offload_kmers(self,kmers_test: tuple):
+		self.name_list.append(kmers_test[0])
+		for i in kmers_test[1]:
+			self.bloom.add(i)
 
 class collapsed_contigs:
 	"""
@@ -39,6 +42,7 @@ class collapsed_contigs:
 		self.kmer_len = kmer_len
 		self.bloom_list = []
 		self.bloom_filter = BloomFilter(max_elements=max_elements,error_rate=1./self.kmer_len)
+		self.bloom_elements = 0
 	@staticmethod
 	def kmer_assembler(fasta: tuple,kmer: int):
 		"""
@@ -62,47 +66,55 @@ class collapsed_contigs:
 			if len(self.bloom_list) < 1:
 				self.bloom_list.append(bloom_object(kmers))
 				for i in kmers[1]:
+					self.bloom_elements += 1
 					self.bloom_filter.add(i)
 			else:
 				seen = 0
+				offload_indices = set()
 				for i in kmers[1]:
-					print(kmers[0],i)
 					try:
 						assert i not in self.bloom_filter #when not in large bloom
-					except AssertionError:
+					except AssertionError: #might be in large bloom
 						seen = 1
-						is_new = 0
-						for j in self.bloom_list:
+						for j,k in enumerate(self.bloom_list):
 							#this offloads all kmers into bloom_filter, forcing the
 							#next iteration to catch and reiterate again. Instead
-							#maybe store indices of catches and then offload into
-							#all indices after all kmers in fasta have been iterated
+							#store indices of catches and then offload into all
+							#indices after all kmers in fasta have been iterated
 							#through
-							is_new += j.test_membership(kmers)
-						if is_new == 0:
-							self.bloom_list.append(bloom_object(kmers))
+							if j not in offload_indices:
+								found = k.test_membership(kmers)
+								if found == 1:
+									offload_indices.add(j)
+						#if is_new == 0:
+							#self.bloom_list.append(bloom_object(kmers))
 						#same here
-						for j in kmers[1]:
-							self.bloom_filter.add(j)
+						#for j in kmers[1]:
+						#	self.bloom_filter.add(j)
 						#break
 				if seen == 0: #hasn't been seen
 					self.bloom_list.append(bloom_object(kmers))
-					for i in kmers[1]:
-						self.bloom_filter.add(i)
+				else:
+					for i in offload_indices:
+						self.bloom_list[i].offload_kmers(kmers)
+				for i in kmers[1]:
+					self.bloom_filter.add(i)
+					self.bloom_elements += 1
+
 
 
 
 def main():
 	byte_size = os.path.getsize(sys.argv[1])
-	contigs = collapsed_contigs(kmer_len,int(byte_size/2))
+	contigs = collapsed_contigs(kmer_len,byte_size)
 	with open(sys.argv[1]) as r:
 		j = 0
 		for line in r:
 			name = line.strip().strip(">")
 			dna = next(r).strip()
 			contigs.clump((name,dna))
-			print([(i.name_list[0],len(i.name_list)) for i in contigs.bloom_list if len(i.name_list) > 1])
-			print(j)
+			print([(i.name_list[0].split(",")[0],len(i.name_list)) for i in contigs.bloom_list if len(i.name_list) > 1])
+			print(j,contigs.bloom_elements,byte_size/2)
 			j += 1
 if __name__ == "__main__":
 	main()
