@@ -106,7 +106,7 @@ class collapsed_contigs:
 
 def main():
 	byte_size = os.path.getsize(sys.argv[1])
-	contigs = collapsed_contigs(kmer_len,byte_size)
+	contigs = collapsed_contigs(kmer_len,byte_size*2)
 	with open(sys.argv[1]) as r:
 		j = 0
 		for line in r:
