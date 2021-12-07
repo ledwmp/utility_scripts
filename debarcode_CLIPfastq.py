@@ -37,10 +37,10 @@ class fastq_parser:
 	"""
 	def __init__(self,fastq_fh: str, barcode_fh: str,pair: False):
 		self._fastq_fh = fastq_fh
-		self._barcode_fh
+		self._barcode_fh = barcode_fh
 		self._pair = pair
 		self.populate_barcodes()
-		self.iterarte_fastq()
+		self.iterate_fastq()
 		self.close_barcodes()
 	def populate_barcodes(self):
 		"""Opens <barcode_file.txt> and populates one dictionary with
@@ -54,7 +54,7 @@ class fastq_parser:
 				self._sample_index[new_line[2].strip()] = new_line[1].strip()
 		r.close()
 		self._sample_index["bad_barcode"] = "bad_barcode"
-		self._sample_barcodes = {j:barcode_write(i,j) \
+		self._sample_barcodes = {j:barcode_writer(i,j) \
 		 							for i,j in self._sample_index.items()}
 	def iterate_fastq(self):
 		"""Walks through fastq and passes entries to respective barcode objects
@@ -123,7 +123,7 @@ class fastq_parser:
 		"""Calls close_file method on barcode objects and dumps log file
 		"""
 		tmp_dict = {j._barcode_number:j.close_file() \
-										for i,j self._sample_barcodes.items()}
+										for i,j in self._sample_barcodes.items()}
 		self._logfile = self._fastq_fh.split(".fastq")[0] + "_debarcode.log"
 		with open(self._logfile,"a") as r:
 			for i,j in tmp_dict.items():
@@ -132,7 +132,7 @@ def main():
 	barcode_file = sys.argv[-1]
 	fastq_files = sys.argv[1:-1]
 	for i in fastq_files:
-		parser = parse_fastq(i,barcode_file,True)
+		parser = fastq_parser(i,barcode_file,True)
 
 if __name__ == "__main__":
 	main()
