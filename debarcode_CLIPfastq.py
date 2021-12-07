@@ -63,34 +63,34 @@ class fastq_parser:
 		if self._pair:
 			with open(self._fastq_fh) as r:
 				for line in r:
-					read_name = line.strip().split(" ")[0]
+					read_name = line.strip()
 					read = next(r).strip()
 					qual_name = next(r).strip()
 					qual = next(r).strip()
 					current_bc = read[5:9]
 					current_umi = read[0:5]+read[9:11]
-					read_name_2 = next(r).strip().split(" ")[0]
+					read_name_2 = next(r).strip()
 					read_2 = next(r).strip()
 					qual_name_2 = next(r).strip()
 					qual_2 = next(r).strip()
 					if current_bc in self._sample_index.keys():
 						self._sample_barcodes[self._sample_index[current_bc]].write_fastq((\
-												read_name+"_umi:"+current_umi,\
+												read_name+" umi:"+current_umi,\
 												read[11:],\
 												qual_name,\
 												qual[11:],\
-												read_name_2+"_umi:"+current_umi,\
+												read_name_2+" umi:"+current_umi,\
 												read_2,\
 												qual_name_2,\
 												qual_2,\
 													))
 					else:
 						self._sample_barcodes["bad_barcode"].write_fastq((\
-												read_name+"_umi:"+current_umi,\
+												read_name+" umi:"+current_umi,\
 												read[11:],\
 												qual_name,\
 												qual[11:],\
-												read_name_2+"_umi:"+current_umi,\
+												read_name_2+" umi:"+current_umi,\
 												read_2,\
 												qual_name_2,\
 												qual_2,\
@@ -99,7 +99,7 @@ class fastq_parser:
 		else:
 			with open(self._fastq_fh) as r:
 				for line in r:
-					read_name = line.strip().split(" ")[0]
+					read_name = line.strip()
 					read = next(r).strip()
 					qual_name = next(r).strip()
 					qual = next(r).strip()
@@ -107,14 +107,14 @@ class fastq_parser:
 					current_umi = read[0:5]+read[9:11]
 					if current_bc in self._sample_index.keys():
 						self._sample_barcodes[self._sample_index[current_bc]].write_fastq((\
-												read_name+"_umi:"+current_umi,\
+												read_name+" umi:"+current_umi,\
 												read[11:],\
 												qual_name,\
 												qual[11:],\
 													))
 					else:
 						self._sample_barcodes["bad_barcode"].write_fastq((\
-												read_name+"_umi:"+current_umi,\
+												read_name+" umi:"+current_umi,\
 												read[11:],\
 												qual_name,\
 												qual[11:],\
