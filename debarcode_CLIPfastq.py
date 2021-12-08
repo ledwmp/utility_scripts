@@ -35,7 +35,7 @@ class fastq_parser:
 	and creates barcode_writer objects. Then iterates through fastq feeding
 	matching fastqs to barcode_writer objects.
 	"""
-	def __init__(self,fastq_fh: str, barcode_fh: str,pair: False):
+	def __init__(self,fastq_fh: str, barcode_fh: str,pair: bool):
 		self._fastq_fh = fastq_fh
 		self._barcode_fh = barcode_fh
 		self._pair = pair
