@@ -69,7 +69,7 @@ class pcr_collapser:
         self._in.close()
         self._out.close()
         with open(self._logfile,"a") as r:
-            r.write(self._fastq_fh.split("/")[-1]+"\n"+\)
+            r.write(self._fastq_fh.split("/")[-1]+"\n"+\
                 "Deduplicated_umis:"+str(self._deduplicated_umis)+"\n"+\
                 "Removed_umis:"+str(self._removed_umis)+"\n")
         print("Deduplicated_umis:"+str(deduplicated_umis))
