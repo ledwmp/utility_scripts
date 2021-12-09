@@ -7,7 +7,7 @@ class barcode_writer:
 	"""Object to store a barcode and open file that fastq entry can write to.
 	"""
 	def __init__(self,base_fh: str, barcode: str, barcode_number: str):
-		self._basefh = base_fh
+		self._basefh = base_fh.split("/")[-1]
 		self._barcode = barcode
 		self._barcode_number = barcode_number
 		self._barcode_counter = 0
