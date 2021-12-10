@@ -75,26 +75,26 @@ class fastq_parser:
 					qual_2 = next(r).strip()
 					if current_bc in self._sample_index.keys():
 						self._sample_barcodes[self._sample_index[current_bc]].write_fastq((\
-												read_name+" umi:"+current_umi,\
-												read[11:],\
-												qual_name,\
-												qual[11:],\
-												read_name_2+" umi:"+current_umi,\
-												read_2,\
-												qual_name_2,\
-												qual_2,\
-													))
+							read_name.split(" ")[0]+":umi:"+current_umi+" "+read_name.split(" ")[1],\
+							read[11:],\
+							qual_name,\
+							qual[11:],\
+							read_name_2.split(" ")[0]+":umi:"+current_umi+" "+read_name_2.split(" ")[1],\
+							read_2,\
+							qual_name_2,\
+							qual_2,\
+								))
 					else:
 						self._sample_barcodes["bad_barcode"].write_fastq((\
-												read_name+" umi:"+current_umi,\
-												read[11:],\
-												qual_name,\
-												qual[11:],\
-												read_name_2+" umi:"+current_umi,\
-												read_2,\
-												qual_name_2,\
-												qual_2,\
-													))
+							read_name.split(" ")[0]+":umi:"+current_umi+" "+read_name.split(" ")[1],\
+							read[11:],\
+							qual_name,\
+							qual[11:],\
+							read_name_2.split(" ")[0]+":umi:"+current_umi+" "+read_name_2.split(" ")[1],\
+							read_2,\
+							qual_name_2,\
+							qual_2,\
+								))
 		#is single end fastq
 		else:
 			with open(self._fastq_fh) as r:
@@ -107,18 +107,18 @@ class fastq_parser:
 					current_umi = read[0:5]+read[9:11]
 					if current_bc in self._sample_index.keys():
 						self._sample_barcodes[self._sample_index[current_bc]].write_fastq((\
-												read_name+" umi:"+current_umi,\
-												read[11:],\
-												qual_name,\
-												qual[11:],\
-													))
+							read_name.split(" ")[0]+":umi:"+current_umi+" "+read_name.split(" ")[1],\
+							read[11:],\
+							qual_name,\
+							qual[11:],\
+								))
 					else:
 						self._sample_barcodes["bad_barcode"].write_fastq((\
-												read_name+" umi:"+current_umi,\
-												read[11:],\
-												qual_name,\
-												qual[11:],\
-													))
+							read_name.split(" ")[0]+":umi:"+current_umi+" "+read_name.split(" ")[1],\
+							read[11:],\
+							qual_name,\
+							qual[11:],\
+								))
 	def close_barcodes(self):
 		"""Calls close_file method on barcode objects and dumps log file
 		"""
