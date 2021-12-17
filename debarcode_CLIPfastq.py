@@ -13,7 +13,7 @@ class barcode_writer:
 		self._barcode_counter = 0
 		self.open_file()
 	def open_file(self):
-		"""Opens file numbered with barcode_number
+		"""Opens file numbered with barcode_number.
 		"""
 		self._file_handle = self._barcode_number + "_" + self._basefh
 		self._open_file = open(self._file_handle,"a")
@@ -22,7 +22,7 @@ class barcode_writer:
 			self._open_file.write(i+"\n")
 		self._barcode_counter += 1
 	def close_file(self):
-		"""Closes barcode number
+		"""Closes barcode number.
 		Returns:
 			Number of barcodes: int
 		"""
@@ -45,7 +45,7 @@ class fastq_parser:
 	def populate_barcodes(self):
 		"""Opens <barcode_file.txt> and populates one dictionary with
 		barcode:barcode_number pairs and second dictionary with
-		barcode:barcode_object pairs
+		barcode:barcode_object pairs.
 		"""
 		self._sample_index = {}
 		with open(self) as r:
@@ -57,7 +57,7 @@ class fastq_parser:
 		self._sample_barcodes = {j:barcode_writer(i,j) \
 		 							for i,j in self._sample_index.items()}
 	def iterate_fastq(self):
-		"""Walks through fastq and passes entries to respective barcode objects
+		"""Walks through fastq and passes entries to respective barcode objects.
 		"""
 		#is interleaved paired-end fastq
 		if self._pair:
@@ -120,7 +120,7 @@ class fastq_parser:
 							qual[11:],\
 								))
 	def close_barcodes(self):
-		"""Calls close_file method on barcode objects and dumps log file
+		"""Calls close_file method on barcode objects and dumps log file.
 		"""
 		tmp_dict = {j._barcode_number:j.close_file() \
 										for i,j in self._sample_barcodes.items()}
