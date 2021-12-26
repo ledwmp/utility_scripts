@@ -4,7 +4,7 @@ Splits a fastq depending on barcodes defined in barcode_file
 """
 
 class barcode_writer:
-	"""Object to store a barcode and open file that fastq entry can write to.
+	"""Stores a barcode and open file that fastq entry can write to.
 	"""
 	def __init__(self,base_fh: str, barcode: str, barcode_number: str):
 		self._basefh = base_fh.split("/")[-1]

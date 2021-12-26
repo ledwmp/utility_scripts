@@ -6,7 +6,7 @@ Removes duplicate umis from SAM file if they have the same read start position
 """
 
 class pcr_collapser:
-    """Class to parse sam file and output PCR-deduplicated reads based on umi and
+    """Parses sam file and output PCR-deduplicated reads based on umi and
     read start positions.
     """
 	def __init__(self, logfile: str, fastq_fh: str, pair: bool):
@@ -16,18 +16,18 @@ class pcr_collapser:
         self.open_outfile()
     @staticmethod
     def sam_to_bit(flag: int):
-        """Method to convert bitwise sam flags to binary
+        """Converts bitwise sam flags to binary
         """
         return str(bin(flag))[2:].zfill(17)
     @staticmethod
     def parse_cigar(cigar: str):
-        """Method to find the number of reference bases consumed by the cigar string,
+        """Finds the number of reference bases consumed by the cigar string,
         to be used for finding read start positions aligning to reverse strand.
         """
         cigars = re.findall('(\d+)([MDN=X])', cigar)
         return sum([int(i[0]) for i in cigars])
     def open_outfile(self):
-        """Method that iterates through sam file and writes reads to out file
+        """Iterates through sam file and writes reads to out file
         if they don't exist in set. Also writes stats to log file.
         """
         self._umis = set()
